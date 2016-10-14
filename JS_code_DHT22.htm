@@ -1,0 +1,232 @@
+<!doctype html>
+ <html>
+ <head>
+ <title>BOLT</title>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/canvasjs/1.7.0/canvasjs.min.js"></script>
+ </head>
+ <body bgcolor="grey" > 
+ <center> 
+ <h3> Temperature and Humidity Measurement</h3> <br>
+ <div id="chartContainer1" style="height: 30rem; padding-top:5rem;width:70%;box-shadow: 0px 1px 5px 0px #000;background: -webkit-linear-gradient(#0073A2, #2196f3);margin-top:3rem;"> </div> 
+ <div id="chartContainer2" style="height: 30rem; padding-top:5rem;width:70%;box-shadow: 0px 1px 5px 0px #000;background: -webkit-linear-gradient(#0073A2, #2196f3);margin-top:3rem;"> </div>
+ <script type="text/javascript">
+ var dps2;
+ var chart2;
+ var dps1;
+ var chart1;
+ window.onload = function () 
+{
+     dps1 = []; //dataPoints. 
+     chart1 = new CanvasJS.Chart("chartContainer1",{
+     title :
+     {
+      text: " "
+      },
+     backgroundColor: "transparent",
+     height: 500,
+     axisX: 
+     { title: "Time",
+      labelFontFamily: "Segoe UI Light",
+      lineThickness: 0,
+      tickThickness: 0,
+      labelFontColor:"white",
+      titleFontColor: "white",
+      titleFontFamily:"Segoe UI Light",
+     },
+     axisY:
+     { stripLines:[
+     { value:0,
+      thickness:1,
+      color: "white",
+     }],
+     tickThickness: 0.5,
+     minimum: 0,
+     maximum: 200,
+     title: "Temperature", 
+      labelFontFamily: "Segoe UI Light",
+     gridThickness: 0,
+     labelFontColor:"white",
+     titleFontColor: "white",
+     titleFontFamily:"Segoe UI Light",
+     },
+     data: [{
+     type: "line",
+     dataPoints : dps1,
+     markerColor:"white",
+     color:"white",
+     }]
+      });
+     chart1.render();
+     dps2 = [];
+     chart2 = new CanvasJS.Chart("chartContainer2",{
+     title :
+     {
+      text: " "
+      },
+     backgroundColor: "transparent",
+     height: 500,
+     axisX: 
+     { title: "Time",
+      labelFontFamily: "Segoe UI Light",
+      lineThickness: 0,
+      tickThickness: 0,
+      labelFontColor:"white",
+      titleFontColor: "white",
+      titleFontFamily:"Segoe UI Light",
+     },
+     axisY:
+     { stripLines:[
+     { value:0,
+      thickness:1,
+      color: "white",
+     }],
+     tickThickness: 0.5,
+     minimum: 0,
+     maximum: 200,
+     title: "Humidity", 
+      labelFontFamily: "Segoe UI Light",
+     gridThickness: 0,
+     labelFontColor:"white",
+     titleFontColor: "white",
+     titleFontFamily:"Segoe UI Light",
+     },
+     data: [{
+     type: "line",
+     dataPoints : dps2,
+     markerColor:"white",
+     color:"white",
+     }]
+      });
+     chart2.render();
+     console.log("in on laod");
+      var yVal = 15; 
+      var updateInterval = 30000;
+      setInterval(30000);
+      setBaud(9600);
+      WRSerialData();
+     setInterval(function(){sendSerialData()}, updateInterval);
+      }
+      function updateChart1(temperature) 
+     {
+          yVal = parseInt(temperature);
+          var xVal = new Date(); 
+          dps1.push({x: xVal,y: yVal});
+           if (dps1.length > 5 )
+           {
+          dps1.shift();
+       }
+          chart1.render();
+      }
+      function updateChart2(humidity) 
+     {
+          yVal = parseInt(humidity);
+          var xVal = new Date(); 
+          dps2.push({x: xVal,y: yVal});
+           if (dps2.length > 5 )
+           {
+          dps2.shift();
+       }
+          chart2.render();
+      }
+function setBaud(baud) {
+    var xmlhttp = new XMLHttpRequest();
+    switch(baud) {
+      case 2400:
+        baud = 0;
+        break;
+      case 4800:
+        baud = 1;
+        break;
+      case 9600:
+        baud = 2;
+        break;
+      case 19255555200:
+        baud = 3;
+        break;
+      default:
+        baud = 4;
+    }
+    xmlhttp.onreadystatechange = function() {
+      if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        {
+        }
+      }
+    };
+    xmlhttp.open("GET","/serialBegin?baud=2&deviceName={{Name}}",true);
+    xmlhttp.send();
+  }
+
+function WRSerialData() {
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+      if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        var obj = JSON.parse(xmlhttp.responseText);
+        if(obj.success=="1")
+        {
+          x = xmlhttp.responseText
+          obj = JSON.parse(x);
+          hAndT = obj.value 
+          if( hAndT.indexOf("empty") == -1 )
+          {
+            var commaIndex = hAndT.indexOf(",") ;
+            var temperature = "";
+            var humidity = "";
+            for (var i = 0; i < commaIndex; i++) {
+              temperature = temperature + hAndT[i];
+            }
+            temperature = parseFloat(temperature);
+            for (var i = ( commaIndex + 1); i < hAndT.length; i++) {
+              humidity = humidity + hAndT[i];
+            }
+            humidity = parseFloat(humidity);
+          }
+        }
+        else{
+        }
+      }
+    };
+    xmlhttp.open("GET","/serialWR?data=hello&deviceName={{Name}}",true);
+    xmlhttp.send();
+  }
+
+function sendSerialData(serialdata) {
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+      if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        {
+        var obj = JSON.parse(xmlhttp.responseText);
+        if(obj.success=="1")
+        {
+          x = xmlhttp.responseText
+          obj = JSON.parse(x);
+          hAndT = obj.value 
+          if( hAndT.indexOf("empty") == -1 )
+          {
+            var commaIndex = hAndT.indexOf(",") ;
+            var temperature = "";
+            var humidity = "";
+            for (var i = 0; i < commaIndex; i++) {
+              temperature = temperature + hAndT[i];
+            }
+            temperature = parseFloat(temperature);
+            for (var i = ( commaIndex + 1); i < hAndT.length; i++) {
+              humidity = humidity + hAndT[i];
+            }
+            humidity = parseFloat(humidity);
+            updateChart1(temperature);
+            updateChart2(humidity);
+          }
+        }
+        else{
+        }
+        }
+
+      }
+    };
+    xmlhttp.open("GET","/serialWR?data=hello&deviceName={{Name}}",true);
+    xmlhttp.send();
+	}
+ </script>
+ </center> 
+ </body> 
+ </html>
